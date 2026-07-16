@@ -1,0 +1,293 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run FastAPI backend",
+			"type": "shell",
+			"command": "python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000",
+			"args": [],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run FastAPI backend on 8001",
+			"type": "shell",
+			"command": "python -m uvicorn backend.main:app --host 127.0.0.1 --port 8001",
+			"args": [],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check MySQL port",
+			"type": "shell",
+			"command": "netstat -ano | findstr 3306",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Test MySQL connection on 33060",
+			"type": "shell",
+			"command": "python -c \"import pymysql; conn=pymysql.connect(host='127.0.0.1', port=33060, user='root', password=''); print('CONNECTED', conn); conn.close()\"",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify MySQL credentials 33060",
+			"type": "shell",
+			"command": "python.exe -c \"import pymysql; conn=pymysql.connect(host='127.0.0.1', port=33060, user='root', password=''); print('CONNECTED', conn); conn.close()\"",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Test simple python",
+			"type": "shell",
+			"command": "python.exe -c 'print(\"hi\")'",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Test python echo",
+			"type": "shell",
+			"command": "python.exe -c 'print(\"hi\")'",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Test python quote fix",
+			"type": "shell",
+			"command": "python.exe -c \"print('hi')\"",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Test mysql connect with python",
+			"type": "shell",
+			"command": "python.exe -c \"import pymysql;conn=pymysql.connect(host='127.0.0.1', port=33060, user='root', password='');print('CONNECTED', conn);conn.close()\"",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Test pymysql import",
+			"type": "shell",
+			"command": "python.exe -c \"import pymysql; print(pymysql.__version__)\"",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Test connection with 33060 and empty password",
+			"type": "shell",
+			"command": "python.exe -c \"import pymysql; conn=pymysql.connect(host='127.0.0.1', port=33060, user='root', password=''); print('CONNECTED'); conn.close()\"",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run backend with DB_PORT=33060",
+			"type": "shell",
+			"command": "$env:DB_PORT='33060'; python -m uvicorn backend.main:app --host 127.0.0.1 --port 8002",
+			"args": [],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Test pymysql connect with pwd",
+			"type": "shell",
+			"command": "python.exe -c \"import pymysql; conn=pymysql.connect(host='127.0.0.1', port=33060, user='root', password='Dharsan@07'); print('CONNECTED'); conn.close()\"",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run backend with MySQL fix",
+			"type": "shell",
+			"command": "python -m uvicorn backend.main:app --host 127.0.0.1 --port 8003",
+			"args": [],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Test connection with single quotes",
+			"type": "shell",
+			"command": "python.exe -c 'import pymysql; conn=pymysql.connect(host=\"127.0.0.1\", port=33060, user=\"root\", password=\"Dharsan@07\"); print(\"CONNECTED\"); conn.close()'",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Install mysql-connector-python",
+			"type": "shell",
+			"command": "python -m pip install mysql-connector-python==8.4.0",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run backend after driver install",
+			"type": "shell",
+			"command": "python -m uvicorn backend.main:app --host 127.0.0.1 --port 8004",
+			"args": [],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Install latest mysql connector",
+			"type": "shell",
+			"command": "python -m pip install --upgrade mysql-connector-python==9.1.0",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run backend with latest connector",
+			"type": "shell",
+			"command": "python -m uvicorn backend.main:app --host 127.0.0.1 --port 8005",
+			"args": [],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Install mysql connector 8.0.33",
+			"type": "shell",
+			"command": "python -m pip install --upgrade mysql-connector-python==8.0.33",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run backend with 8.0.33 connector",
+			"type": "shell",
+			"command": "python -m uvicorn backend.main:app --host 127.0.0.1 --port 8006",
+			"args": [],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check MySQL version",
+			"type": "shell",
+			"command": "mysql.exe --version",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Show mysql service details",
+			"type": "shell",
+			"command": "sc query MySQL80",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run python script from task",
+			"type": "shell",
+			"command": "python.exe -c \"print('ok')\"",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Show installed DB packages",
+			"type": "shell",
+			"command": "python -m pip show pymysql mysql-connector-python",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run DB probe script",
+			"type": "shell",
+			"command": "python.exe backend/test_db.py",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Show python env and PyMySQL version",
+			"type": "shell",
+			"command": "python -c \"import sys, pymysql; print(sys.executable); print('pymysql', pymysql.__version__)\"",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Inspect python executable and pymysql version",
+			"type": "shell",
+			"command": "python.exe -c \"import sys; import pymysql; print(sys.executable); print('pymysql', pymysql.__version__)\"",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check available Python versions",
+			"type": "shell",
+			"command": "py -0p",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run backend with SQLite fallback",
+			"type": "shell",
+			"command": "python -m uvicorn backend.main:app --host 127.0.0.1 --port 8007",
+			"args": [],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run backend after SQLite schema fix",
+			"type": "shell",
+			"command": "python -m uvicorn backend.main:app --host 127.0.0.1 --port 8008",
+			"args": [],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run backend with results endpoint",
+			"type": "shell",
+			"command": "python -m uvicorn backend.main:app --host 127.0.0.1 --port 8009",
+			"args": [],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run corrected backend on 8008",
+			"type": "shell",
+			"command": "python -m uvicorn backend.main:app --host 127.0.0.1 --port 8008",
+			"args": [],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run corrected backend on 8010",
+			"type": "shell",
+			"command": "python -m uvicorn backend.main:app --host 127.0.0.1 --port 8010",
+			"args": [],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Stop old Python servers",
+			"type": "shell",
+			"command": "taskkill /F /IM python.exe /T",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run final backend on 8010",
+			"type": "shell",
+			"command": "python -m uvicorn backend.main:app --host 127.0.0.1 --port 8010",
+			"args": [],
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}
