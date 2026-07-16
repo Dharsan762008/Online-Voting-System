@@ -7,7 +7,7 @@ let candidatesList = [];
 let selectedPositionTab = "President"; // Default category
 let selectedPhotoFile = null;
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = "https://online-voting-system-fqi3.onrender.com";
 
 // Initialize connections on page load
 document.addEventListener("DOMContentLoaded", () => {
