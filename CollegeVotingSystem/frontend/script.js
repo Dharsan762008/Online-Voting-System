@@ -230,9 +230,13 @@ function renderCandidates() {
     card.className = "candidate-card";
     
     // Choose appropriate image url or default SVG avatar
-    const imgHtml = cand.image_url 
-      ? `<img src="${cand.image_url}" alt="${cand.name}">`
-      : `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+   const imageUrl = cand.image_url
+  ? `${API_BASE}${cand.image_url}`
+  : "";
+
+const imgHtml = imageUrl
+  ? `<img src="${imageUrl}" alt="${cand.name}">`
+  : `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
 
     card.innerHTML = `
       <div class="card-avatar-box">${imgHtml}</div>
