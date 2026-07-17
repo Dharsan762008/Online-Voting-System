@@ -1,13 +1,17 @@
 # backend/database.py
 import os
 import sqlite3
-import mysql.connector
 
-# MySQL configuration from environment variables or default values
+try:
+    import mysql.connector as mysql_connector
+except ImportError:  # pragma: no cover - optional dependency for local fallback
+    mysql_connector = None
+
+# MySQL configuration from environment variables or default values.
 DB_HOST = os.getenv("DB_HOST", "127.0.0.1")
-DB_PORT = int(os.getenv("DB_PORT", "33060"))
+DB_PORT = int(os.getenv("DB_PORT", "3306"))
 DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "Dharsan@07")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 DB_NAME = os.getenv("DB_NAME", "college_voting")
 SQLITE_DB_PATH = os.path.join(os.path.dirname(__file__), "voting.sqlite3")
 
@@ -16,42 +20,34 @@ def _normalize_sql(query: str):
     return query.replace("%s", "?")
 
 
-def _dict_factory(cursor, row):
-    return {key: row[key] for key in [column[0] for column in cursor.description]}
+def _get_mysql_connection(include_db=True):
+    if mysql_connector is None:
+        raise RuntimeError("mysql.connector is not installed")
+    return mysql_connector.connect(
+        host=DB_HOST,
+        port=DB_PORT,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        database=DB_NAME if include_db else None,
+        autocommit=True,
+    )
 
 
 def get_connection(include_db=True):
-    """
-    Try MySQL first, and fall back to SQLite for local development.
-    """
+    """Try MySQL first and fall back to SQLite for local development."""
     try:
-        conn = mysql.connector.connect(
-            host=DB_HOST,
-            port=DB_PORT,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            database=DB_NAME if include_db else None,
-            autocommit=True,
-        )
-        return conn
+        return _get_mysql_connection(include_db=include_db)
     except Exception:
         conn = sqlite3.connect(SQLITE_DB_PATH)
         conn.row_factory = sqlite3.Row
         conn.execute("PRAGMA foreign_keys = ON")
         return conn
 
+
 def init_db():
-    """
-    Try MySQL first and fall back to SQLite initialization.
-    """
+    """Create the database schema if needed, using a SQLite fallback when MySQL is unavailable."""
     try:
-        conn = mysql.connector.connect(
-            host=DB_HOST,
-            port=DB_PORT,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            autocommit=True,
-        )
+        conn = _get_mysql_connection(include_db=False)
         with conn.cursor() as cursor:
             cursor.execute(f"CREATE DATABASE IF NOT EXISTS {DB_NAME}")
         conn.close()
@@ -62,13 +58,34 @@ def init_db():
         return _init_sqlite_schema()
 
 
+def _execute_schema_file(conn):
+    schema_path = os.path.join(os.path.dirname(__file__), "..", "schema.sql")
+    if not os.path.exists(schema_path):
+        raise FileNotFoundError(f"Schema file not found: {schema_path}")
+
+    with open(schema_path, "r", encoding="utf-8") as handle:
+        statements = [statement.strip() for statement in handle.read().split(";") if statement.strip()]
+
+    if isinstance(conn, sqlite3.Connection):
+        conn.executescript(";".join(statements) + ";")
+        conn.commit()
+        return
+
+    with conn.cursor() as cursor:
+        for statement in statements:
+            statement = statement.strip()
+            if not statement or statement.startswith("--"):
+                continue
+            cursor.execute(statement)
+    conn.commit()
+
+
 def _init_mysql_schema():
     try:
         conn = get_connection(include_db=True)
         with conn.cursor() as cursor:
             cursor.execute("SHOW TABLES LIKE 'voters'")
-            result = cursor.fetchone()
-            if not result:
+            if not cursor.fetchone():
                 _execute_schema_file(conn)
             else:
                 print("Database tables verified. Ready for operation.")
@@ -87,7 +104,8 @@ def _init_sqlite_schema():
         result = cursor.fetchone()
 
         if not result:
-            cursor.executescript('''
+            cursor.executescript(
+                """
                 CREATE TABLE voters (
                     voter_id TEXT PRIMARY KEY,
                     password TEXT NOT NULL,
@@ -117,6 +135,11 @@ def _init_sqlite_schema():
                     FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE
                 );
 
+                CREATE TABLE election_settings (
+                    id INTEGER PRIMARY KEY,
+                    election_status TEXT NOT NULL
+                );
+
                 DELETE FROM votes;
                 DELETE FROM candidates;
                 DELETE FROM voters;
@@ -135,21 +158,29 @@ def _init_sqlite_schema():
                 ('VP02', 'pass123', 'Sofia Rodriguez', 'B.Sc Mathematics, 2nd Year', 'General Secretary, Mathematics Association', 'Conducted peer-to-peer tutoring workshops for 1st-year students, coordinated inter-college math olympiad.', 'I pledge to secure subsidized student travel passes, increase funding for non-technical societies, and clean the sports arena.', '', 'Vice President'),
                 ('SEC01', 'pass123', 'Liam Carter', 'B.Tech CS, 2nd Year', 'Core member of Web Development Cell', 'Designed the departmental newsletter website, active volunteer at open source development community.', 'I will coordinate weekly coding contests, push for student-mentor guidance programs, and organize guest lectures from tech leaders.', '', 'General Secretary'),
                 ('SEC02', 'pass123', 'Neha Patel', 'B.Tech Biotech, 2nd Year', 'Class Coordinator, Cult-fest Organizer', 'Spearheaded department laboratory upgrades drive, organized cultural performances at the college foundation day.', 'I am dedicated to organizing regular industrial lab visits, expanding research seminar sessions, and bridging peer connection gaps.', '', 'General Secretary');
-            ''')
+
+                INSERT OR IGNORE INTO election_settings (id, election_status) VALUES (1, 'STOPPED');
+                """
+            )
             conn.commit()
             print("SQLite database initialized successfully with mock data!")
         else:
             print("SQLite tables verified. Ready for operation.")
+
+        cursor.execute(
+            "CREATE TABLE IF NOT EXISTS election_settings (id INTEGER PRIMARY KEY, election_status TEXT NOT NULL)"
+        )
+        cursor.execute("INSERT OR IGNORE INTO election_settings (id, election_status) VALUES (1, 'STOPPED')")
+        conn.commit()
         conn.close()
         return True
     except Exception as e:
         print(f"Error initializing SQLite tables: {e}")
         return False
 
+
 def fetch_all(query, params=None):
-    """
-    Executes a SELECT query and returns all matching rows as a list of dictionaries.
-    """
+    """Execute a SELECT query and return all matching rows as dictionaries."""
     conn = get_connection()
     try:
         if isinstance(conn, sqlite3.Connection):
@@ -163,10 +194,9 @@ def fetch_all(query, params=None):
     finally:
         conn.close()
 
+
 def fetch_one(query, params=None):
-    """
-    Executes a SELECT query and returns a single row as a dictionary (or None).
-    """
+    """Execute a SELECT query and return a single row as a dictionary or None."""
     conn = get_connection()
     try:
         if isinstance(conn, sqlite3.Connection):
@@ -180,10 +210,9 @@ def fetch_one(query, params=None):
     finally:
         conn.close()
 
+
 def execute_query(query, params=None):
-    """
-    Executes an INSERT, UPDATE, or DELETE query and returns the number of affected rows.
-    """
+    """Execute an INSERT, UPDATE, or DELETE query."""
     conn = get_connection()
     try:
         if isinstance(conn, sqlite3.Connection):
@@ -192,7 +221,7 @@ def execute_query(query, params=None):
             conn.commit()
             return cursor.rowcount
         with conn.cursor(dictionary=True) as cursor:
-            result = cursor.execute(query, params or ())
-            return result
+            cursor.execute(query, params or ())
+            return cursor.rowcount
     finally:
         conn.close()
