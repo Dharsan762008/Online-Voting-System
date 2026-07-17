@@ -2,7 +2,7 @@
 import os
 import shutil
 import sys
-from fastapi import FastAPI, HTTPException, File, UploadFile, Form
+from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -139,27 +139,42 @@ def candidate_login(req: CandidateLoginRequest):
     }
 
 @app.get("/api/candidates")
-def get_candidates():
-    """
-    Fetch all registered candidates and group them.
-    """
+def get_candidates(request: Request):
     candidates = database.fetch_all(
         "SELECT candidate_id, name, degree, qualification, achievements, manifesto, image_url, position FROM candidates"
     )
-    return {"success": True, "candidates": candidates}
+
+    base_url = str(request.base_url).rstrip("/")
+
+    for candidate in candidates:
+        if candidate.get("image_url"):
+            candidate["image_url"] = base_url + candidate["image_url"]
+
+    return {
+        "success": True,
+        "candidates": candidates
+    }
 
 @app.get("/api/candidate/profile/{candidate_id}")
-def get_candidate_profile(candidate_id: str):
-    """
-    Fetch detailed profile of a single candidate.
-    """
+def get_candidate_profile(candidate_id: str, request: Request):
+
     candidate = database.fetch_one(
         "SELECT candidate_id, name, degree, qualification, achievements, manifesto, image_url, position FROM candidates WHERE candidate_id = %s",
         (candidate_id,)
     )
+
     if not candidate:
         raise HTTPException(status_code=404, detail="Candidate not found.")
-    return {"success": True, "candidate": candidate}
+
+    base_url = str(request.base_url).rstrip("/")
+
+    if candidate.get("image_url"):
+        candidate["image_url"] = base_url + candidate["image_url"]
+
+    return {
+        "success": True,
+        "candidate": candidate
+    }
 
 @app.post("/api/vote")
 def cast_vote(req: VoteRequest):
