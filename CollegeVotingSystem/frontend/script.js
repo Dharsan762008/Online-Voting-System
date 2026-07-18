@@ -555,6 +555,19 @@ async function loadResultsData() {
     const resultsList = data.results || [];
     const totalVotesAll = data.totalVotes || 0;
 
+// Update statistics cards
+document.getElementById("totalVotes").textContent = totalVotesAll;
+
+// Count registered candidates (temporary display)
+document.getElementById("registeredVoters").textContent = resultsList.length;
+
+// Temporary turnout calculation
+const turnout = resultsList.length > 0
+  ? ((totalVotesAll / resultsList.length) * 100).toFixed(1)
+  : 0;
+
+document.getElementById("turnoutPercentage").textContent = `${turnout}%`;
+
     container.innerHTML = "";
 
     if (resultsList.length === 0) {
