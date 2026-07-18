@@ -507,31 +507,51 @@ button.btn-secondary-small:hover {
 
 .candidate-card {
   background: var(--card-bg);
-  border: 1px solid var(--card-border);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  transition: var(--transition-smooth);
+  transition: all 0.35s ease;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
 }
 
 .candidate-card:hover {
-  transform: translateY(-5px);
-  border-color: rgba(79, 172, 254, 0.25);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  transform: translateY(-10px) scale(1.02);
+  border-color: #4f8cff;
+  box-shadow:
+    0 20px 40px rgba(0,0,0,0.35),
+    0 0 20px rgba(79,140,255,0.35);
 }
 
-/* Left stripe in card */
+/* Animated top highlight */
+.candidate-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #4f8cff, #7b61ff);
+  transition: left 0.5s ease;
+}
+
+.candidate-card:hover::before {
+  left: 0;
+}
+
+/* Left gradient strip */
 .candidate-card::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
-  width: 4px;
+  width: 5px;
   height: 100%;
-  background: linear-gradient(to bottom, var(--accent-blue), var(--accent-purple));
+  background: linear-gradient(to bottom, #4f8cff, #7b61ff);
 }
 
 .card-avatar-box {
