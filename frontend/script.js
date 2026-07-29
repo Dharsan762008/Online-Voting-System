@@ -7,8 +7,9 @@ let candidatesList = [];
 let selectedPositionTab = "President"; // Default category
 let selectedPhotoFile = null;
 
-const API_BASE = ""; // Relative paths since frontend and backend are hosted on same port
-
+const API_BASE = window.location.hostname.includes("netlify.app") 
+  ? "https://online-voting-system-1-f2ra.onrender.com" 
+  : ""; // Uses relative path on Render or localhost
 // Initialize connections on page load
 document.addEventListener("DOMContentLoaded", () => {
   checkServerHealth();
