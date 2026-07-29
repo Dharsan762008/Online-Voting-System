@@ -279,7 +279,8 @@
           <div class="stat-card">
             <h3 class="stat-title">CSV Upload</h3>
             <div class="file-input-wrapper" style="margin-top: 0.5rem;">
-               <input type="file" id="csvStudentFile" accept=".csv" style="font-size: 0.8rem;">
+               <button class="btn-file-select" id="csvFileBtnText">Select CSV File</button>
+               <input type="file" id="csvStudentFile" accept=".csv" onchange="document.getElementById('csvFileBtnText').innerText = this.files[0] ? this.files[0].name : 'Select CSV File'">
             </div>
             <button class="btn-primary-small" style="margin-top: 0.5rem; width: 100%;" onclick="handleAdminCSVUpload()">Upload Students</button>
           </div>
