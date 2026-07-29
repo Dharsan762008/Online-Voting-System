@@ -392,8 +392,24 @@ def upload_students(file: UploadFile = File(...)):
     if not file.filename.endswith(".csv"):
         raise HTTPException(status_code=400, detail="Please upload a CSV file.")
     try:
-        content = file.file.read().decode("utf-8")
+        content = file.file.read().decode("utf-8-sig")
         reader = csv.DictReader(io.StringIO(content))
+        
+        if not reader.fieldnames:
+             raise HTTPException(status_code=400, detail="CSV is empty or missing headers.")
+             
+        # Normalize headers to lowercase and strip whitespace
+        reader.fieldnames = [str(name).strip().lower() for name in reader.fieldnames]
+        
+        # Map common alternatives
+        reader.fieldnames = ["voter_id" if h in ["id", "student_id", "studentid", "voterid"] else h for h in reader.fieldnames]
+        reader.fieldnames = ["department" if h in ["dept"] else h for h in reader.fieldnames]
+        
+        required = {"voter_id", "password", "name", "department"}
+        missing = required - set(reader.fieldnames)
+        if missing:
+            raise HTTPException(status_code=400, detail=f"Missing columns: {', '.join(missing)}")
+
         count = 0
         skipped = 0
         for row in reader:
@@ -408,6 +424,8 @@ def upload_students(file: UploadFile = File(...)):
             count += 1
         return {"success": True, "message": f"{count} students uploaded successfully.", "added": count, "skipped": skipped}
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         raise HTTPException(status_code=500, detail=str(e))
 
 # --- STATIC MOUNTS ROUTING ---
