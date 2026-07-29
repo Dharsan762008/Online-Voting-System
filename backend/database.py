@@ -1,13 +1,26 @@
 # backend/database.py
 import os
+import urllib.parse
 import pymysql
 import pymysql.cursors
 
 # MySQL configuration from environment variables or default values
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "")
-DB_NAME = os.getenv("DB_NAME", "college_voting")
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if DATABASE_URL:
+    # Parse e.g., mysql://user:password@host:port/dbname
+    parsed = urllib.parse.urlparse(DATABASE_URL)
+    DB_HOST = parsed.hostname
+    DB_USER = parsed.username
+    DB_PASSWORD = parsed.password or ""
+    DB_NAME = parsed.path.lstrip("/")
+    DB_PORT = parsed.port or 3306
+else:
+    DB_HOST = os.getenv("DB_HOST", "localhost")
+    DB_USER = os.getenv("DB_USER", "root")
+    DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+    DB_NAME = os.getenv("DB_NAME", "college_voting")
+    DB_PORT = int(os.getenv("DB_PORT", "3306"))
 
 def get_connection(include_db=True):
     """
@@ -17,6 +30,7 @@ def get_connection(include_db=True):
         host=DB_HOST,
         user=DB_USER,
         password=DB_PASSWORD,
+        port=DB_PORT,
         database=DB_NAME if include_db else None,
         cursorclass=pymysql.cursors.DictCursor,
         autocommit=True
@@ -32,6 +46,7 @@ def init_db():
             host=DB_HOST,
             user=DB_USER,
             password=DB_PASSWORD,
+            port=DB_PORT,
             autocommit=True
         )
         with conn.cursor() as cursor:
