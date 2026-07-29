@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>College Online Election Portal</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Background Animated Glow Orbs -->
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <div class="container">
+    
+    <!-- Top System Header -->
+    <header class="app-header">
+      <div class="header-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="m9 11 2 2 4-4"/>
+        </svg>
+        <span>VOTEGUARD PORTAL</span>
+      </div>
+      <div class="connection-status" id="connectionStatus">
+        <span class="status-dot offline"></span>
+        <span class="status-text" id="statusText">Connecting Server...</span>
+      </div>
+    </header>
+
+    <!-- Main Navigation Menu Tabs -->
+    <nav class="main-menu">
+      <button class="active" onclick="switchMainTab('voter')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        Student Voters
+      </button>
+      <button onclick="switchMainTab('candidate')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <line x1="19" x2="19" y1="8" y2="14"/>
+          <line x1="22" x2="16" y1="11" y2="11"/>
+        </svg>
+        Candidate Console
+      </button>
+      <button onclick="switchMainTab('results')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" x2="18" y1="20" y2="10"/>
+          <line x1="12" x2="12" y1="20" y2="4"/>
+          <line x1="6" x2="6" y1="20" y2="14"/>
+        </svg>
+        Live Tallies
+      </button>
+      <button onclick="switchMainTab('admin')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <path d="M12 2l3 3h4v4l3 3-3 3v4h-4l-3 3-3-3H5v-4l-3-3 3-3V5h4z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+        Admin Console
+      </button>
+    </nav>
+
+    <!-- SECTION 1: STUDENT VOTER PORTAL -->
+    <div id="voterPortal" class="tab-section active">
+      
+      <!-- Voter Authentication Check -->
+      <div id="voterLoginCard" class="auth-card">
+        <h2>Student Voter Login</h2>
+        <p class="auth-subtitle">Verify your student identity to load candidates and cast ballots.</p>
+        <div class="form-group">
+          <input type="text" id="voterIdInput" placeholder="Enter Student Voter ID (e.g. STU001)">
+        </div>
+        <div class="form-group">
+          <input type="password" id="voterPassInput" placeholder="Password">
+        </div>
+        <button class="btn-primary" onclick="handleVoterLogin()">
+          Authenticate Security Session
+        </button>
+      </div>
+
+      <!-- Voter Active Session Dashboard -->
+      <div id="voterDashboard" class="dashboard-wrapper" style="display: none;">
+        <div class="session-info-bar">
+          <div class="voter-badge">
+            <div class="badge-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <div>
+              <div class="voter-name" id="sessionVoterName">David Miller</div>
+              <div class="voter-details" id="sessionVoterDetails">STU001 • Department of Computer Science</div>
+            </div>
+          </div>
+          <button class="btn-secondary" onclick="handleVoterLogout()">Logout</button>
+        </div>
+
+        <h2 class="section-title">Electoral Categories</h2>
+
+        <!-- Position Category Toggles -->
+        <div class="position-tab-bar">
+          <button class="pos-tab active" onclick="switchPositionTab('President')">President</button>
+          <button class="pos-tab" onclick="switchPositionTab('Vice President')">Vice President</button>
+          <button class="pos-tab" onclick="switchPositionTab('General Secretary')">General Secretary</button>
+        </div>
+
+        <!-- Ballot Cast Indicator -->
+        <div id="ballotCastBadge" class="ballot-status-badge" style="display: none;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span>You have cast your secure ballot for this position.</span>
+        </div>
+
+        <!-- Candidate Cards Grid -->
+        <div id="voterCandidatesGrid" class="cards-grid">
+          <!-- Dynamically populated candidate cards -->
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SECTION 2: CANDIDATE PROFILE PORTAL -->
+    <div id="candidatePortal" class="tab-section">
+      
+      <!-- Candidate Authentication Check -->
+      <div id="candidateLoginCard" class="auth-card">
+        <h2>Candidate Console Login</h2>
+        <p class="auth-subtitle">Authorized participants only. Access profile configuration utilities.</p>
+        <div class="form-group">
+          <input type="text" id="candidateIdInput" placeholder="Enter Candidate ID (e.g. PRES01)">
+        </div>
+        <div class="form-group">
+          <input type="password" id="candidatePassInput" placeholder="Console Password">
+        </div>
+        <button class="btn-primary" onclick="handleCandidateLogin()">
+          Decrypt Profile Console
+        </button>
+      </div>
+
+      <!-- Candidate Profile Editor console -->
+      <div id="candidateEditor" class="editor-wrapper" style="display: none;">
+        <div class="session-info-bar">
+          <div>
+            <h2 class="editor-title">Candidate Profile Console</h2>
+            <p class="editor-subtitle">Modify details presented to student voters.</p>
+          </div>
+          <button class="btn-secondary" onclick="handleCandidateLogout()">Logout</button>
+        </div>
+
+        <div class="editor-layout">
+          
+          <!-- Image upload and preview card -->
+          <div class="profile-photo-card">
+            <h3>Profile Photo</h3>
+            <div class="photo-preview-box">
+              <img id="profileImagePreview" src="" alt="Profile Image" style="display: none;">
+              <div id="photoAvatarPlaceholder" class="photo-placeholder-avatar">
+                <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+            </div>
+            <div class="file-input-wrapper">
+              <button class="btn-file-select">Select Photo File</button>
+              <input type="file" id="candidateImageFile" accept="image/*" onchange="previewSelectedImage(event)">
+            </div>
+            <p class="photo-upload-hint">Formats: JPG, PNG, WebP (Max 2MB).</p>
+            <button class="btn-primary-small" onclick="handleCandidateImageUpload()">
+              Upload Photo
+            </button>
+          </div>
+
+          <!-- Text Profile fields -->
+          <div class="profile-details-form">
+            <h3>Campaign Information</h3>
+            <div class="editor-grid">
+              <div class="form-group">
+                <label>Registered Name</label>
+                <input type="text" id="candEditName" placeholder="Full Name">
+              </div>
+              <div class="form-group">
+                <label>Position Affiliation</label>
+                <input type="text" id="candEditPosition" disabled style="opacity: 0.65; cursor: not-allowed;">
+              </div>
+              <div class="form-group full-width">
+                <label>Degree & Year</label>
+                <input type="text" id="candEditDegree" placeholder="e.g. B.Tech CS, 3rd Year">
+              </div>
+              <div class="form-group full-width">
+                <label>Academic / Extra-Curricular Qualifications</label>
+                <input type="text" id="candEditQual" placeholder="e.g. Class Rep, Tech-fest Organizer">
+              </div>
+              <div class="form-group full-width">
+                <label>Profile Achievements</label>
+                <textarea id="candEditAchievements" placeholder="List your key achievements during college life..."></textarea>
+              </div>
+              <div class="form-group full-width">
+                <label>Campaign Manifesto & Promises</label>
+                <textarea id="candEditManifesto" placeholder="List your promises and manifesto agenda for voters..."></textarea>
+              </div>
+            </div>
+            <button class="btn-primary" onclick="handleCandidateProfileUpdate()">
+              Save Profile Changes
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: ELECTION LIVE TALLIES -->
+    <div id="resultsPortal" class="tab-section">
+      <div class="results-header-box">
+        <h2>Live Ballot tallies</h2>
+        <p class="results-subtitle">Encrypted public ledger vote summaries. Refresh values live.</p>
+        <button class="btn-secondary-small" onclick="loadResultsData()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+          </svg>
+          Sync Votes
+        </button>
+      </div>
+
+      <!-- Live position summaries container -->
+      <div id="resultsTalliesContainer">
+        <!-- Dynamically rendered progress charts per position -->
+      </div>
+    </div>
+
+    <!-- SECTION 4: ADMIN DASHBOARD PORTAL -->
+    <div id="adminPortal" class="tab-section">
+      
+      <!-- Admin Authentication Check -->
+      <div id="adminLoginCard" class="auth-card">
+        <h2>Admin Portal Login</h2>
+        <p class="auth-subtitle">Restricted system access. Authorized personnel only.</p>
+        <div class="form-group">
+          <input type="text" id="adminUser" placeholder="Admin Username">
+        </div>
+        <div class="form-group">
+          <input type="password" id="adminPass" placeholder="Admin Password">
+        </div>
+        <button class="btn-primary" onclick="handleAdminLogin()">
+          Authenticate Admin
+        </button>
+      </div>
+
+      <!-- Admin Dashboard Layout -->
+      <div id="adminDashboard" class="editor-wrapper" style="display: none;">
+        <div class="session-info-bar">
+          <div>
+            <h2 class="editor-title">Election Control Center</h2>
+            <p class="editor-subtitle">Manage voters, candidates, and election status.</p>
+          </div>
+          <button class="btn-secondary" onclick="handleAdminLogout()">Logout</button>
+        </div>
+
+        <!-- Global Stats & Status Row -->
+        <div class="admin-stats-grid">
+          <div class="stat-card">
+            <h3 class="stat-title">Election Status</h3>
+            <div id="adminElectionStatus" class="stat-value status-stopped">STOPPED</div>
+            <button class="btn-secondary-small" style="margin-top: 0.5rem;" onclick="toggleElectionStatus()">Toggle Status</button>
+          </div>
+          <div class="stat-card">
+            <h3 class="stat-title">Total Votes Cast</h3>
+            <div id="adminTotalVotes" class="stat-value">0</div>
+          </div>
+          <div class="stat-card">
+            <h3 class="stat-title">CSV Upload</h3>
+            <div class="file-input-wrapper" style="margin-top: 0.5rem;">
+               <input type="file" id="csvStudentFile" accept=".csv" style="font-size: 0.8rem;">
+            </div>
+            <button class="btn-primary-small" style="margin-top: 0.5rem; width: 100%;" onclick="handleAdminCSVUpload()">Upload Students</button>
+          </div>
+        </div>
+        
+        <!-- Candidate Management List -->
+        <div class="profile-details-form" style="margin-top: 1.5rem;">
+          <h3>Manage Candidates</h3>
+          <div id="adminCandidatesList" class="cards-grid" style="grid-template-columns: 1fr; margin-bottom: 1rem;">
+             <!-- Renders existing candidates here with edit/delete buttons -->
+          </div>
+          
+          <h4 style="color: var(--text-primary); margin-bottom: 1rem;">Add / Update Candidate</h4>
+          <div class="editor-grid">
+            <div class="form-group">
+              <label>Candidate ID (e.g. PRES03)</label>
+              <input type="text" id="adminCandId">
+            </div>
+            <div class="form-group">
+              <label>Password (for Candidate Login)</label>
+              <input type="text" id="adminCandPass">
+            </div>
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" id="adminCandName">
+            </div>
+            <div class="form-group">
+              <label>Position (e.g. President)</label>
+              <input type="text" id="adminCandPosition">
+            </div>
+            <div class="form-group">
+              <label>Degree & Year</label>
+              <input type="text" id="adminCandDegree">
+            </div>
+            <div class="form-group">
+              <label>Qualifications</label>
+              <input type="text" id="adminCandQual">
+            </div>
+            <div class="form-group full-width">
+              <label>Achievements</label>
+              <textarea id="adminCandAchieve"></textarea>
+            </div>
+            <div class="form-group full-width">
+              <label>Manifesto</label>
+              <textarea id="adminCandManifesto"></textarea>
+            </div>
+          </div>
+          <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+             <button class="btn-primary" onclick="adminAddCandidate()">Add New Candidate</button>
+             <button class="btn-secondary" onclick="adminUpdateCandidate()">Update Existing</button>
+          </div>
+        </div>
+        
+        <!-- Winners List -->
+        <div class="profile-details-form" style="margin-top: 1.5rem;">
+          <h3>Current Winners</h3>
+          <div id="adminWinnersList" style="color: var(--text-secondary); line-height: 1.6;">
+            <!-- Render winners here -->
+          </div>
+          <button class="btn-secondary-small" style="margin-top: 1rem;" onclick="adminLoadWinners()">Refresh Winners</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Micro Notifications Toast -->
+  <div id="appToast" class="toast-card">
+    <span class="toast-icon" id="toastIcon"></span>
+    <span class="toast-message" id="toastMessage"></span>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
