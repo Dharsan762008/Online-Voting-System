@@ -415,10 +415,33 @@ def upload_students(file: UploadFile = File(...)):
 # Mount uploaded candidate photos route
 app.mount("/uploads", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "uploads")), name="uploads")
 
+from fastapi.responses import FileResponse
+
 # Mount client side frontend SPA
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 frontend_dir = os.path.join(BASE_DIR, "frontend")
+
+@app.get("/api/debug")
+def get_debug():
+    return {
+        "__file__": __file__,
+        "abspath": os.path.abspath(__file__),
+        "base_dir": BASE_DIR,
+        "frontend_dir": frontend_dir,
+        "frontend_exists": os.path.exists(frontend_dir),
+        "frontend_contents": os.listdir(frontend_dir) if os.path.exists(frontend_dir) else [],
+        "cwd": os.getcwd(),
+        "cwd_contents": os.listdir(os.getcwd())
+    }
+
+@app.get("/")
+def read_root():
+    index_path = os.path.join(frontend_dir, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return {"error": f"index.html not found at {index_path}"}
+
 if os.path.exists(frontend_dir):
-    app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
+    app.mount("/", StaticFiles(directory=frontend_dir, html=False), name="frontend")
 else:
     print(f"Warning: Frontend folder not found at path: {frontend_dir}. Make sure you create the frontend folder.")
