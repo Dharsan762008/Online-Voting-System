@@ -413,7 +413,9 @@ def upload_students(file: UploadFile = File(...)):
 # --- STATIC MOUNTS ROUTING ---
 
 # Mount uploaded candidate photos route
-app.mount("/uploads", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "uploads")), name="uploads")
+uploads_dir = os.path.join(os.path.dirname(__file__), "uploads")
+os.makedirs(uploads_dir, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 
 from fastapi.responses import FileResponse
 
