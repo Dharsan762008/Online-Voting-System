@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 # Import local database helpers
-import database
+from backend import database
 
 app = FastAPI(title="College Online Voting API")
 
@@ -416,7 +416,8 @@ def upload_students(file: UploadFile = File(...)):
 app.mount("/uploads", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "uploads")), name="uploads")
 
 # Mount client side frontend SPA
-frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+frontend_dir = os.path.join(BASE_DIR, "frontend")
 if os.path.exists(frontend_dir):
     app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
 else:
