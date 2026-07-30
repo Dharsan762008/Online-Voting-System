@@ -68,7 +68,7 @@ Online Voting/
 ---
 
 ### Step 4: Open and Test the Voting System
-Open your web browser and navigate to **[http://localhost:8000](http://localhost:8000)**. The page will load your frontend and automatically sync with the API database.
+Open your web browser and navigate to **https://online-voting-system-1-f2ra.onrender.com/**. The page will load your frontend and automatically sync with the API database.
 
 *   **Voter login details (Student Voters)**:
     *   **Student ID**: `STU001` (up to `STU005`)
