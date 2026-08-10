@@ -7,7 +7,15 @@ let candidatesList = [];
 let selectedPositionTab = "President"; // Default category
 let selectedPhotoFile = null;
 
-const API_BASE = "https://online-voting-system-fqi3.onrender.com"; // Relative paths since frontend and backend are hosted on same port
+function getApiBase() {
+  // When FastAPI serves the frontend, the API is available on this same origin.
+  // Retain a local fallback so opening index.html directly still works.
+  return window.location.protocol === "file:"
+    ? "http://127.0.0.1:8010"
+    : window.location.origin;
+}
+
+const API_BASE = getApiBase();
 
 // Initialize connections on page load
 document.addEventListener("DOMContentLoaded", () => {
@@ -99,10 +107,13 @@ function switchMainTab(tabName) {
     renderCandidates();
   } else if (tabName === "candidate") {
     document.getElementById("candidatePortal").classList.add("active");
-  } else if (tabName === "results") {
-    document.getElementById("resultsPortal").classList.add("active");
-    loadResultsData();
-  }
+} else if (tabName === "results") {
+  document.getElementById("resultsPortal").classList.add("active");
+  loadResultsData();
+
+} else if (tabName === "admin") {
+  document.getElementById("adminPortal").classList.add("active");
+}
 }
 
 // ===================================================
@@ -202,6 +213,10 @@ async function loadCandidatesData() {
  * Renders Candidate Cards based on current category and voting history
  */
 function renderCandidates() {
+  console.log("Active Voter:", activeVoter);
+console.log("Selected Position:", selectedPositionTab);
+console.log("Candidates:", candidatesList);
+
   const grid = document.getElementById("voterCandidatesGrid");
   const badge = document.getElementById("ballotCastBadge");
   grid.innerHTML = "";
@@ -642,5 +657,69 @@ document.getElementById("turnoutPercentage").textContent = `${turnout}%`;
     console.error(error);
     container.innerHTML = `<p style="color: var(--error); text-align: center; margin-top: 2rem;">Failed to connect to backend results database.</p>`;
     showToast("Failed to fetch database results ledger.", "error");
+  }
+}
+function adminLogin() {
+  const username = document.getElementById("adminUser").value.trim();
+  const password = document.getElementById("adminPass").value.trim();
+
+  if (username === "admin" && password === "admin123") {
+    showToast("Admin Login Successful", "success");
+
+    document.getElementById("adminPortal").innerHTML = `
+      <div class="auth-card">
+        <h2>Admin Dashboard</h2>
+
+        <p>Welcome Administrator!</p>
+
+        <br>
+
+        <input type="file" id="csvFile" accept=".csv">
+
+        <br><br>
+
+        <button class="btn-primary" onclick="uploadCSV()">
+          Upload Student CSV
+        </button>
+      </div>
+    `;
+
+  } else {
+    showToast("Invalid Admin Credentials", "error");
+  }
+}
+async function uploadCSV() {
+  const fileInput = document.getElementById("csvFile");
+
+  if (!fileInput.files.length) {
+    showToast("Please select a CSV file.", "error");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", fileInput.files[0]);
+
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/upload-voters`, {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      showToast(
+        `${data.added} voters added successfully. ${data.skipped} duplicates skipped.`,
+        "success"
+      );
+
+      fileInput.value = "";
+    } else {
+      showToast(data.detail || "CSV upload failed.", "error");
+    }
+
+  } catch (err) {
+    console.error(err);
+    showToast("Server connection failed.", "error");
   }
 }

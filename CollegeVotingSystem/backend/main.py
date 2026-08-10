@@ -2,11 +2,13 @@
 import os
 import shutil
 import sys
+import csv
 from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 
 # Make backend-local imports work when the app is started from the project root.
 BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -237,6 +239,62 @@ def update_candidate_profile(req: CandidateProfileUpdateRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Profile update failed: {str(e)}")
 
+@app.post("/api/admin/upload-voters")
+async def upload_voters(file: UploadFile = File(...)):
+    """
+    Upload voters from a CSV file.
+    CSV format:
+    id_voters,Name,Password,department
+    """
+
+    if not file.filename.endswith(".csv"):
+        raise HTTPException(status_code=400, detail="Please upload a CSV file.")
+
+    try:
+        content = await file.read()
+        rows = content.decode("utf-8").splitlines()
+
+        reader = csv.DictReader(rows)
+
+        added = 0
+        skipped = 0
+
+        for row in reader:
+            voter_id = row["id_voters"].strip()
+            name = row["Name"].strip()
+            password = row["Password"].strip()
+            department = row["department"].strip()
+
+            # Check duplicate voter
+            existing = database.fetch_one(
+                "SELECT voter_id FROM voters WHERE voter_id = %s",
+                (voter_id,)
+            )
+
+            if existing:
+                skipped += 1
+                continue
+
+            database.execute_query(
+                """
+                INSERT INTO voters
+                (voter_id, name, password, department)
+                VALUES (%s, %s, %s, %s)
+                """,
+                (voter_id, name, password, department)
+            )
+
+            added += 1
+
+        return {
+            "success": True,
+            "added": added,
+            "skipped": skipped
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/api/candidate/upload-image")
 def upload_candidate_image(
     candidateId: str = Form(...),
@@ -288,6 +346,17 @@ app.mount("/uploads", StaticFiles(directory=os.path.join(os.path.dirname(__file_
 # Mount client side frontend SPA
 frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
 if os.path.exists(frontend_dir):
-    app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
+    @app.get("/")
+    def serve_index():
+        return FileResponse(os.path.join(frontend_dir, "index.html"))
+
+    @app.get("/{path:path}")
+    def catch_all(path: str):
+        if path.startswith("api/") or path.startswith("uploads/"):
+            raise HTTPException(status_code=404, detail="Not Found")
+        file_path = os.path.join(frontend_dir, path)
+        if os.path.isfile(file_path):
+            return FileResponse(file_path)
+        return FileResponse(os.path.join(frontend_dir, "index.html"))
 else:
     print(f"Warning: Frontend folder not found at path: {frontend_dir}. Make sure you create the frontend folder.")
