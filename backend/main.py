@@ -74,6 +74,7 @@ class DeleteCandidateRequest(BaseModel):
 
 class UpdateCandidateRequest(BaseModel):
     candidateId: str
+    password: Optional[str] = None
     name: str
     degree: str
     qualification: str
@@ -353,17 +354,35 @@ def admin_add_candidate(req: AdminCandidateRequest):
     
 @app.put("/api/admin/update-candidate")
 def update_candidate(data: UpdateCandidateRequest):
+    updates = [
+        "name=%s",
+        "degree=%s",
+        "qualification=%s",
+        "manifesto=%s",
+        "position=%s",
+    ]
+    params = [
+        data.name,
+        data.degree,
+        data.qualification,
+        data.manifesto,
+        data.position,
+    ]
+
+    # An empty field leaves the existing password unchanged.
+    if data.password:
+        updates.append("password=%s")
+        params.append(data.password)
+
+    params.append(data.candidateId)
     rows = database.execute_query(
-        """
-        UPDATE candidates
-        SET name=%s, degree=%s, qualification=%s, manifesto=%s, position=%s
-        WHERE candidate_id=%s
-        """,
-        (data.name, data.degree, data.qualification, data.manifesto, data.position, data.candidateId)
+        f"UPDATE candidates SET {', '.join(updates)} WHERE candidate_id=%s",
+        tuple(params),
     )
     if rows == 0:
         raise HTTPException(status_code=404, detail="Candidate not found.")
-    return {"success": True, "message": "Candidate updated successfully."}
+    message = "Candidate details and password updated successfully." if data.password else "Candidate updated successfully."
+    return {"success": True, "message": message}
     
 @app.delete("/api/admin/delete-candidate")
 def delete_candidate(req: DeleteCandidateRequest):
