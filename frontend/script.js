@@ -824,6 +824,7 @@ async function adminAddCandidate() {
 }
 
 async function adminUpdateCandidate() {
+  const password = document.getElementById("adminCandPass").value;
   const reqData = {
     candidateId: document.getElementById("adminCandId").value.trim(),
     name: document.getElementById("adminCandName").value.trim(),
@@ -832,6 +833,10 @@ async function adminUpdateCandidate() {
     qualification: document.getElementById("adminCandQual").value.trim(),
     manifesto: document.getElementById("adminCandManifesto").value.trim()
   };
+
+  if (password) {
+    reqData.password = password;
+  }
 
   if (!reqData.candidateId) {
     showToast("Candidate ID is required to update.", "error");
